@@ -44,7 +44,7 @@ namespace Reddis
 
             string result = await db.StringGetAsync(key);
 
-            Assert.AreEqual(testValue, result);
+            Assert.Equals(testValue, result);
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace Reddis
 
             await sub.PublishAsync(channelName, "hello");
 
-            Assert.IsTrue(messageDelivered);
+            Assert.That(messageDelivered, Is.True);
         }
     }
 }
