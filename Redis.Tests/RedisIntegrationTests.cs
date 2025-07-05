@@ -1,17 +1,72 @@
+using Aspire.Hosting;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace Redis.Tests;
 
-public class RedisIntegrationTests
+public class RedisIntegrationTests : IClassFixture<DABContext>
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private readonly Redis.Tests.DABContext _dAB;
 
+    public RedisIntegrationTests(Redis.Tests.DABContext dAB)
+    {
+        _dAB = dAB;
+    }
 
     [Fact]
     public async Task Set_and_read_key()
     {
         // Arrange
+        var db = _dAB.Redis.GetDatabase();
+
+        // Act
+        const string key = "TestKey";
+        const string testValue = "TestValue";
+
+        await db.StringSetAsync(key, testValue);
+
+        string? result = await db.StringGetAsync(key);
+
+        Assert.Equal(testValue, result);
+    }
+
+    [Fact]
+    public async Task PubSub()
+    {
+        // Given
+        bool messageDelivered = false;
+        var channelName = RedisChannel.Literal("messages");
+
+        // When
+        var sub = _dAB.Redis.GetSubscriber();
+
+        sub.Subscribe(channelName, (channel, message) =>
+        {
+            // Console.WriteLine((string)message);
+            messageDelivered = true;
+        });
+
+        await sub.PublishAsync(channelName, "hello");
+
+        // Wait for a short time to allow the message to be processed
+        await Task.Delay(100);
+
+        // Then
+        Assert.True(messageDelivered, "Message was not delivered to the subscriber.");
+    }
+}
+
+public class DABContext : IAsyncLifetime
+{
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private DistributedApplication? _app;
+    private ConnectionMultiplexer? _redis;
+
+    public DistributedApplication App => _app ?? throw new InvalidOperationException("Application has not been initialized.");
+    public ConnectionMultiplexer Redis => _redis ?? throw new InvalidOperationException("Redis connection has not been initialized.");
+
+    public async Task InitializeAsync()
+    {
         var cancellationToken = new CancellationTokenSource(DefaultTimeout).Token;
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>(cancellationToken);
         appHost.Services.AddLogging(logging =>
@@ -27,17 +82,10 @@ public class RedisIntegrationTests
             clientBuilder.AddStandardResilienceHandler();
         });
 
-        await using var app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
-        var t = app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
-        await t;
+        _app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+        await _app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
 
-        if (t.IsFaulted)
-        {
-            throw new Exception("Failed to start the application", t.Exception);
-        }
-
-        // Act
-        var redisConnectionString = await app.GetConnectionStringAsync("cache");
+        var redisConnectionString = await _app.GetConnectionStringAsync("cache");
 
         if (string.IsNullOrEmpty(redisConnectionString))
         {
@@ -45,18 +93,15 @@ public class RedisIntegrationTests
         }
 
         // Connect to Redis
-        var redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
+        _redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
+    }
 
-
-        var db = redis.GetDatabase();
-
-        const string key = "TestKey";
-        const string testValue = "TestValue";
-
-        await db.StringSetAsync(key, testValue);
-
-        string? result = await db.StringGetAsync(key);
-
-        Assert.Equal(testValue, result);
+    public Task DisposeAsync()
+    {
+        if (_app != null)
+        {
+            return _app.StopAsync().WaitAsync(DefaultTimeout);
+        }
+        return Task.CompletedTask;
     }
 }
