@@ -51,7 +51,7 @@ namespace Reddis
         public async Task HelloWorld_of_PubSub()
         {
             bool messageDelivered = false;
-            const string channelName = "messages";
+            var channelName = RedisChannel.Literal("messages") ;
 
             ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connectionString);
             var sub = redis.GetSubscriber();
