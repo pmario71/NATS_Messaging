@@ -1,0 +1,23 @@
+﻿@page "/NATStest"
+@using NATS.Client.Core
+@rendermode InteractiveServer
+
+@inject INatsConnection _connection;
+@inject ILogger<NATStest> _logger;
+
+<PageTitle>Counter</PageTitle>
+
+<h1>NATS</h1>
+
+<input type="text" class="form-control" placeholder="Type something..." @bind-value="_message" />
+<button class="btn btn-primary" @onclick="SendMessage">Click me</button>
+
+@code {
+    private string _message = string.Empty;
+
+    private void SendMessage()
+    {
+        _logger.LogInformation("Sending message: {Message}", _message);
+        _connection.PublishAsync("test.topic", _message);
+    }
+}

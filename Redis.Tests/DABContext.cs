@@ -1,5 +1,6 @@
 using Aspire.Hosting;
 using Microsoft.Extensions.Logging;
+using NATS.Net;
 using StackExchange.Redis;
 
 namespace Redis.Tests;
@@ -10,8 +11,24 @@ public class DABContext : IAsyncLifetime
     private DistributedApplication? _app;
     private ConnectionMultiplexer? _redis;
 
+
+    private string? _natsConnectionString;
+    // private NatsClient? _natsClient;
+
     public DistributedApplication App => _app ?? throw new InvalidOperationException("Application has not been initialized.");
     public ConnectionMultiplexer Redis => _redis ?? throw new InvalidOperationException("Redis connection has not been initialized.");
+
+    public NatsClient NatsClient
+    {
+        get
+        {
+            if (_natsConnectionString == null)
+            {
+                throw new InvalidOperationException("NATS connection string is not configured.");
+            }
+            return new NatsClient(_natsConnectionString);
+        }
+    }
 
     public async Task InitializeAsync()
     {
@@ -33,7 +50,13 @@ public class DABContext : IAsyncLifetime
         _app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
         await _app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
 
-        var redisConnectionString = await _app.GetConnectionStringAsync("cache");
+        await InitRedisClient(_app);
+        await InitNatsClient(_app);
+    }
+
+    private async Task InitRedisClient(DistributedApplication app)
+    {
+        var redisConnectionString = await app.GetConnectionStringAsync("cache");
 
         if (string.IsNullOrEmpty(redisConnectionString))
         {
@@ -44,8 +67,22 @@ public class DABContext : IAsyncLifetime
         _redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
     }
 
+    private async Task InitNatsClient(DistributedApplication app)
+    {
+        var natsConnectionString = await app!.GetConnectionStringAsync("nats");
+
+        if (string.IsNullOrEmpty(natsConnectionString))
+        {
+            throw new InvalidOperationException("NATS connection string is not configured.");
+        }
+
+        _natsConnectionString = natsConnectionString;
+    }
+
     public Task DisposeAsync()
     {
+        _redis?.Dispose();
+
         if (_app != null)
         {
             return _app.StopAsync().WaitAsync(DefaultTimeout);

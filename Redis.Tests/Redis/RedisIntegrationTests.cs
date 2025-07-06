@@ -1,12 +1,12 @@
 using StackExchange.Redis;
 
-namespace Redis.Tests;
+namespace Redis.Tests.Redis;
 
 public class RedisIntegrationTests : IClassFixture<DABContext>
 {
-    private readonly Redis.Tests.DABContext _dAB;
+    private readonly DABContext _dAB;
 
-    public RedisIntegrationTests(Redis.Tests.DABContext dAB)
+    public RedisIntegrationTests(DABContext dAB)
     {
         _dAB = dAB;
     }

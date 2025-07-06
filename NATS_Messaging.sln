@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NATS_Client", "NATS_Messaging\NATS_Client.csproj", "{E7244494-30E0-45E9-B8FF-D5C63FE0B728}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ActiveMQ", "ActiveMQ\ActiveMQ.csproj", "{0EF8642E-665E-4FD1-9D12-29483B3A2CC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "ServiceDefaults\ServiceDefaults.csproj", "{6BEDC695-2311-4B94-8D89-08AD1BA5DF08}"
@@ -12,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "AppHost\AppHost.csproj", "{59DDD9E2-DC21-4485-977C-9BC812D925D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Tests", "Redis.Tests\Redis.Tests.csproj", "{2FE89F0C-7995-4DC0-BEB3-570A06268AE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csproj", "{A3899740-CAFE-4B04-91B1-A32608F8A194}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,18 +23,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Debug|x64.Build.0 = Debug|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Debug|x86.Build.0 = Debug|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Release|x64.ActiveCfg = Release|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Release|x64.Build.0 = Release|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Release|x86.ActiveCfg = Release|Any CPU
-		{E7244494-30E0-45E9-B8FF-D5C63FE0B728}.Release|x86.Build.0 = Release|Any CPU
 		{0EF8642E-665E-4FD1-9D12-29483B3A2CC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0EF8642E-665E-4FD1-9D12-29483B3A2CC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EF8642E-665E-4FD1-9D12-29483B3A2CC9}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -83,6 +71,18 @@ Global
 		{2FE89F0C-7995-4DC0-BEB3-570A06268AE9}.Release|x64.Build.0 = Release|Any CPU
 		{2FE89F0C-7995-4DC0-BEB3-570A06268AE9}.Release|x86.ActiveCfg = Release|Any CPU
 		{2FE89F0C-7995-4DC0-BEB3-570A06268AE9}.Release|x86.Build.0 = Release|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Release|x64.Build.0 = Release|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3899740-CAFE-4B04-91B1-A32608F8A194}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
