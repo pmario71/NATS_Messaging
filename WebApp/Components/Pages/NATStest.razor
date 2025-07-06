@@ -1,4 +1,4 @@
-﻿@page "/NATStest"
+﻿@page "/natstest"
 @using NATS.Client.Core
 @rendermode InteractiveServer
 
@@ -9,15 +9,43 @@
 
 <h1>NATS</h1>
 
-<input type="text" class="form-control" placeholder="Type something..." @bind-value="_message" />
-<button class="btn btn-primary" @onclick="SendMessage">Click me</button>
+<input type="text" class="form-control" placeholder="Type something..." @bind-value="_message" style="margin: 0.5rem;" />
+<button class="btn btn-primary" style="margin: 0.5rem;" @onclick="SendMessage">Send message</button>
+
+@if (_sent)
+{
+    <span style="color: green; margin-left: 0.5rem;">Message sent!</span>
+}
 
 @code {
     private string _message = string.Empty;
+    private bool _sent = false;
+    private bool _sending = false;
 
-    private void SendMessage()
+    private async Task SendMessage()
     {
-        _logger.LogInformation("Sending message: {Message}", _message);
-        _connection.PublishAsync("test.topic", _message);
+        if (string.IsNullOrWhiteSpace(_message)) return;
+        _sending = true;
+        _sent = false;
+        StateHasChanged();
+
+        try
+        {
+            _logger.LogInformation("Sending message: {Message}", _message);
+            await _connection.PublishAsync("test.topic", _message);
+
+            _logger.LogInformation("Message sent: {Message}", _message);
+            _sent = true;
+            _message = string.Empty;
+        }
+        finally
+        {
+            _sending = false;
+            StateHasChanged();
+            // Hide feedback after 1.5 seconds
+            await Task.Delay(1500);
+            _sent = false;
+            StateHasChanged();
+        }
     }
 }
