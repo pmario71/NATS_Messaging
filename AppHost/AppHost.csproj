@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../ActiveMQ/ActiveMQ.csproj" />
+    <ProjectReference Include="../ServiceDefaults/ServiceDefaults.csproj" />
     <ProjectReference Include="../WebApp/WebApp.csproj" />
   </ItemGroup>
 
