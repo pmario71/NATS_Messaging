@@ -25,52 +25,37 @@ public class NATSIntegrationTests : IClassFixture<DABContext>
     {
         // Given
         var client = _dAB.NatsClient;
-        INatsConnection conn = client.Connection;
-
-        await conn.PublishAsync("greet.joe", "Hey Joe!");
+      
 
         int i = 0;
         CancellationTokenSource cts = new();
+
+        
 
         var t = Task.Run(async () =>
         {
             _output.WriteLine("Starting to listen for messages...");
 
-            // ensure a new client and connection is used
-            await foreach (var msg in _dAB.NatsClient.Connection.SubscribeAsync<string>("greet.*", cancellationToken: cts.Token)
+            await foreach (var msg in client.SubscribeAsync<string>("greet.>", cancellationToken: cts.Token)
                     .ConfigureAwait(false))
             {
-                // _output.WriteLine($"Received message: {msg.Subject} / {msg.Data!}");
+                _output.WriteLine($"Received message: {msg.Subject} / {msg.Data!}");
                 i++;
-
-                if (msg.Subject == "greet.jeff")
-                {
-                    break; // stop after receiving the message for Joe
-                }
             }
         }, cts.Token); 
 
-        await conn.PublishAsync("greet.jeff", "Hello Jeff!");
+        // When publishing happens first, then none of the messages is received
 
+        await client.PublishAsync("greet.joe", "Hey Joe!");
+        await client.PublishAsync("greet.jeff", "Hello Jeff!");
 
-        // wait until all messages are processed
-        await Task.Yield(); // Yield to allow the async task to run
-        await Task.Delay(1000); // Wait a bit to ensure the message is processed
+        // ensure all messages are processed
+        await client.PingAsync();
+
+        // cancel subscription
+        cts.Cancel();
         
-        if (!t.IsCompleted)
-        {
-            cts.Cancel(); // Cancel the task if it is still running
-            _output.WriteLine("Task was cancelled due to timeout.");
-        }
-        else
-        {
-            _output.WriteLine("Task completed successfully.");
-        }
-
 
         Assert.Equal(2, i);
     }
 }
-
-// public record Msg(string msg);
-

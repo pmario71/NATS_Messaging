@@ -8,14 +8,14 @@ namespace Redis.Tests;
 public class DABContext : IAsyncLifetime
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
-    private DistributedApplication? _app;
+    private DistributedApplication? _aspireApp;
     private ConnectionMultiplexer? _redis;
 
 
     private string? _natsConnectionString;
-    // private NatsClient? _natsClient;
+    private NatsClient? _natsClient;
 
-    public DistributedApplication App => _app ?? throw new InvalidOperationException("Application has not been initialized.");
+    public DistributedApplication App => _aspireApp ?? throw new InvalidOperationException("Application has not been initialized.");
     public ConnectionMultiplexer Redis => _redis ?? throw new InvalidOperationException("Redis connection has not been initialized.");
 
     public NatsClient NatsClient
@@ -26,7 +26,8 @@ public class DABContext : IAsyncLifetime
             {
                 throw new InvalidOperationException("NATS connection string is not configured.");
             }
-            return new NatsClient(_natsConnectionString);
+            
+            return _natsClient;
         }
     }
 
@@ -47,11 +48,11 @@ public class DABContext : IAsyncLifetime
             clientBuilder.AddStandardResilienceHandler();
         });
 
-        _app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
-        await _app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+        _aspireApp = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+        await _aspireApp.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
 
-        await InitRedisClient(_app);
-        await InitNatsClient(_app);
+        await InitRedisClient(_aspireApp);
+        await InitNatsClient(_aspireApp);
     }
 
     private async Task InitRedisClient(DistributedApplication app)
@@ -77,16 +78,20 @@ public class DABContext : IAsyncLifetime
         }
 
         _natsConnectionString = natsConnectionString;
+        _natsClient = new NatsClient(_natsConnectionString);
     }
 
-    public Task DisposeAsync()
+    public async Task DisposeAsync()
     {
+        Task[] tasks = [Task.CompletedTask, Task.CompletedTask];
+
+        tasks[0] = _natsClient!.DisposeAsync().AsTask();
         _redis?.Dispose();
 
-        if (_app != null)
+        if (_aspireApp != null)
         {
-            return _app.StopAsync().WaitAsync(DefaultTimeout);
+            tasks[2] = _aspireApp.StopAsync();
         }
-        return Task.CompletedTask;
+        await Task.WhenAll(tasks).WaitAsync(DefaultTimeout);
     }
 }
