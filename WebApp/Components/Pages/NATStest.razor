@@ -5,7 +5,10 @@
 @inject INatsConnection _connection;
 @inject ILogger<NATStest> _logger;
 
-<PageTitle>Counter</PageTitle>
+@* @inject HttpClient Http *@
+@inject INatsSubscriptionStats _subscriptionStats;
+
+<PageTitle>NATS</PageTitle>
 
 <h1>NATS</h1>
 
@@ -17,10 +20,40 @@
     <span style="color: green; margin-left: 0.5rem;">Message sent!</span>
 }
 
+<div style="margin-top: 2rem;">
+    <h5>NATS Stats</h5>
+    @if (_stats != null)
+    {
+        <div>
+            <span style="margin-right:1rem;">Total Messages Received: <b>@_stats.TotalMessagesReceived</b></span>
+            <span>Total Errors: <b>@_stats.TotalErrors</b></span>
+        </div>
+    }
+    else
+    {
+        <span>Loading stats...</span>
+    }
+</div>
+
 @code {
     private string _message = string.Empty;
     private bool _sent = false;
     private bool _sending = false;
+
+    private NatsStats? _stats;
+    private Timer? _statsTimer;
+
+    protected override void OnInitialized()
+    {
+        _stats = new NatsStats();
+        _subscriptionStats.MessageReceived += (sender, args) =>
+        {
+            _stats.TotalMessagesReceived = _subscriptionStats.TotalMessagesReceived;
+            _stats.TotalErrors = _subscriptionStats.TotalErrors;
+            InvokeAsync(StateHasChanged);
+        };
+    }
+
 
     private async Task SendMessage()
     {
@@ -47,5 +80,16 @@
             _sent = false;
             StateHasChanged();
         }
+    }
+
+    public class NatsStats
+    {
+        public int TotalMessagesReceived { get; set; }
+        public int TotalErrors { get; set; }
+    }
+
+    public void Dispose()
+    {
+        _statsTimer?.Dispose();
     }
 }

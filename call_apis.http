@@ -1,0 +1,2 @@
+GET http://localhost:5092/nats/stats
+Accept: application/json
